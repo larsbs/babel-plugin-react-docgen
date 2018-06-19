@@ -37,19 +37,25 @@ function injectReactDocgenInfo(path, state, code, t) {
     }
   } catch(e) {
     // this is for debugging the error only, do not ship this console log or else it pollutes the webpack output
+    // console.log(code);
     // console.log(e);
     return;
   }
 
   docgenResults.forEach(function(docgenResult, index) {
     let exportName = docgenResult.actualName;
+    if ( ! exportName) {
+      return null;
+    }
+
     const docNode = buildObjectExpression(docgenResult, t);
     const docgenInfo = t.expressionStatement(
       t.assignmentExpression(
         "=",
         t.memberExpression(t.identifier(exportName), t.identifier('__docgenInfo')),
-        docNode
-      ));
+        docNode,
+      ),
+    );
     program.pushContainer('body', docgenInfo);
 
     injectDocgenGlobal(exportName, path, state, t);
